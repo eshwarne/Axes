@@ -30,6 +30,11 @@ import IResourceArtifact, {
   ResourceVariantTypes,
 } from "./Models/interfaces/IResourceArtifact";
 import ResourceArtifactNode from "./View/ResourceArtifactNode";
+import {
+  makeNodeIdToNodeMap,
+  queryGraphWithAXEQuery,
+  representGraphAdjListFrom,
+} from "./Utils/GraphUtils";
 
 initializeIcons();
 const NodeToArtifactMap = {
@@ -47,14 +52,6 @@ const canvasHeight =
 
 const initialNodes: Node[] = [];
 const initialEdges: Edge[] = [];
-const makeNodeIdToNodeMap = (nodes: Node[]): Record<string, Node> => {
-  let nodeIdToNodeMap: Record<string, Node> = {};
-  nodes.forEach((node) => {
-    nodeIdToNodeMap[node.id] = node;
-  });
-  console.log(nodeIdToNodeMap);
-  return nodeIdToNodeMap;
-};
 function App() {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
@@ -66,7 +63,6 @@ function App() {
     useState<Record<string, Node>>();
   useEffect(() => {
     setNodeIdToNodeMap({ ...makeNodeIdToNodeMap(nodes) });
-    console.log("UseEffect");
   }, [nodes]);
   const [queryString, setQueryString] = useState<string>("");
   const [currentSelectedArtifact, setCurrentSelectedArtifact] = useState<
@@ -74,57 +70,24 @@ function App() {
   >();
   useState<IResourceArtifact>();
   const [isModalOpen, setIsOpenModal] = useState<boolean>();
-  const makeAdjListFromEdgeList = (
-    edges: Edge[],
-    adjList: Record<string, string[]> = {}
-  ) => {
-    edges.forEach((edge) => {
-      adjList[edge.source]?.push(edge.target);
-      adjList[edge.target]?.push(edge.source);
-    });
-    return adjList;
-  };
-  const makeEmptyAdjListWithNodes = (nodes: string[]) => {
-    let adjList: Record<string, string[]> = {};
-    nodes.forEach((node) => {
-      adjList[node] = [];
-    });
-    return adjList;
-  };
-
-  const filterNodes = () => {
-    let nodeEntryPointIds = new Array<string>();
-    nodeEntryPointIds = nodes
-      .filter((node) => node.data.Name?.includes(queryString))
-      .map((node) => node.id);
-    let adjList = makeEmptyAdjListWithNodes(nodes.map((node) => node.id));
-    adjList = makeAdjListFromEdgeList(edges, adjList);
-    let visited = new Set<string>();
-    nodeEntryPointIds.forEach((nodeId) => {
-      let stack: Array<string> = [nodeId];
-      while (stack.length !== 0) {
-        let current = stack.pop() as string;
-        if (visited.has(current)) {
-          continue;
-        } else {
-          visited.add(current);
-          adjList[current].forEach((node) => {
-            stack.push(node);
-          });
-        }
-      }
-    });
-    return nodes.filter((node) => {
-      return visited.has(node.id);
-    });
-  };
+  const adjList = representGraphAdjListFrom(nodes, edges, false);
+  const filterNodes = useCallback(() => {
+    if (queryString.length < 3) {
+      return [...nodes];
+    } else {
+      return queryGraphWithAXEQuery(
+        adjList,
+        queryString,
+        nodeIdToNodeMap ?? {}
+      );
+    }
+  }, [queryString, adjList]);
   const onConnect = useCallback(
     (connection: Connection) =>
       setEdges((eds) => {
         let sourceNode =
           nodeIdToNodeMap && nodeIdToNodeMap[connection.source ?? ""];
-        console.log(connection.source);
-        console.log(nodeIdToNodeMap);
+
         let isConnectionAnimated =
           sourceNode?.type === "authArtifactNode" && sourceNode.data.IS_JIT;
         let accessType =
@@ -341,7 +304,6 @@ function App() {
       <Modal
         isOpen={isPrivateKeyModalOpen}
         onDismiss={() => {
-          console.log("Modal Dismissed");
           setIsPrivateKeyModalOpen(false);
         }}
       >
@@ -359,7 +321,7 @@ function App() {
           <DefaultButton
             onClick={() => {
               setIsPrivateKeyModalOpen(false);
-              console.log(privateKeyResolver);
+
               privateKeyResolver.current(privateKey);
             }}
           >

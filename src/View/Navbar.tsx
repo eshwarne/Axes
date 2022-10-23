@@ -146,7 +146,7 @@ const Navbar = ({
       JSON.stringify({ nodes, edges }),
       privateKey
     );
-    console.log(encryptedContent);
+
     const fileHandler = await window.showSaveFilePicker({
       suggestedName: "AccessList.AXES",
       types: [
