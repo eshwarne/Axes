@@ -125,6 +125,7 @@ const Navbar = ({
     option?: IDropdownOption<any> | undefined,
     index?: number | undefined
   ) => {
+    setQueryString("");
     if (option) {
       if (option.key.toString().startsWith("AUTH")) {
         setSelectedArtifact({
