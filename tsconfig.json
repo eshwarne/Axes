@@ -1,5 +1,7 @@
 {
   "compilerOptions": {
+    // Needed because typescript window types are broken currently
+    "types": ["@types/wicg-file-system-access"],
     "target": "es5",
     "lib": [
       "dom",
