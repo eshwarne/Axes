@@ -71,12 +71,17 @@ function App() {
   useState<IResourceArtifact>();
   const [isModalOpen, setIsOpenModal] = useState<boolean>();
   const adjList = representGraphAdjListFrom(nodes, edges, false);
+  useEffect(() => {
+    setQueryString("");
+  }, [nodes, edges]);
   const filterNodes = useCallback(() => {
     if (queryString.length < 3) {
       return [...nodes];
     } else {
+      console.log("AXEQUERY_PROCESSING_GRAPH_NODES", nodes);
+      console.log("AXEQUERY_PROCESSING_GRAPH_EDGES", edges);
       return queryGraphWithAXEQuery(
-        adjList,
+        representGraphAdjListFrom(nodes, edges, true),
         queryString,
         nodeIdToNodeMap ?? {}
       );
