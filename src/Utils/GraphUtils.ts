@@ -30,7 +30,7 @@ const representGraphAdjListFrom = (
   });
   edges.forEach((edge) => {
     edge.target && adjList[edge.source]?.push(nodeIdToNodeMap[edge.target]);
-    if (isDirected) {
+    if (!isDirected) {
       edge.source && adjList[edge.target]?.push(nodeIdToNodeMap[edge.source]);
     }
   });
@@ -38,8 +38,8 @@ const representGraphAdjListFrom = (
 };
 
 /**
- * Traverses Nodes Depth First and Checks if Node matches query string
- * @param adjList The adjacency list representation of the graph
+ * Traverses Nodes Depth First and Checks if Node matches query string with its relationship
+ * @param adjList The directed adjacency list representation of the graph
  * @param axeQueryString Axe Query String
  */
 const queryGraphWithAXEQuery = (
@@ -48,11 +48,15 @@ const queryGraphWithAXEQuery = (
   nodeIdToNodeMap: Record<string, Node>
 ): Node[] => {
   let processedAXESQuery = AXEQueryProcessor(axeQueryString);
-
+  let matchedNodes = Object.values(nodeIdToNodeMap)
+    .filter((node) => checkIfNodePassesAXEQueries(node, processedAXESQuery))
+    .map((node) => node.id);
   let visited = new Set<string>();
-  let matchingNodeIds: Node[] = [];
+  let relatedNodes: Node[] = [];
   let stack: string[] = [];
-  Object.keys(adjList).forEach((nodeId) => {
+  console.log("AXEQUERY_PROCESSING_GRAPH", adjList);
+  console.log("AXEQUERY_PROCESSING_GRAPH", matchedNodes);
+  matchedNodes.forEach((nodeId) => {
     if (!visited.has(nodeId)) {
       stack.push(nodeId);
       while (stack.length !== 0) {
@@ -60,16 +64,7 @@ const queryGraphWithAXEQuery = (
         if (processingNodeId && !visited.has(processingNodeId)) {
           let neighbors = adjList[processingNodeId];
           visited.add(processingNodeId);
-
-          if (
-            checkIfNodePassesAXEQueries(
-              nodeIdToNodeMap[processingNodeId],
-              processedAXESQuery
-            )
-          ) {
-            matchingNodeIds.push(nodeIdToNodeMap[processingNodeId]);
-            console.log(matchingNodeIds);
-          }
+          relatedNodes.push(nodeIdToNodeMap[processingNodeId]);
           neighbors.forEach((neighbor) => {
             if (!visited.has(neighbor.id)) {
               stack.push(neighbor.id);
@@ -79,7 +74,8 @@ const queryGraphWithAXEQuery = (
       }
     }
   });
-  return matchingNodeIds;
+  console.log("AXEQUERY_PROCESSING_GRAPH", relatedNodes);
+  return relatedNodes;
 };
 
 /**
