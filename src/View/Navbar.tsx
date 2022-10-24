@@ -6,11 +6,14 @@ import {
   IDropdownOption,
   IDropdownProps,
   Label,
+  Link,
   SearchBox,
   Stack,
+  TeachingBubble,
   Text,
 } from "@fluentui/react";
 import * as CryptoJS from "crypto-js";
+import { useState } from "react";
 import { Edge, Node } from "reactflow";
 import IAuthArtifact, {
   AuthArtifactTypes,
@@ -94,6 +97,8 @@ const Navbar = ({
   setNodes: (nodes: Node[]) => void;
   setEdges: (edges: Edge[]) => void;
 }) => {
+  const [isAxeQueryTeacherVisible, setIsAxeQueryTeacherVisible] =
+    useState(false);
   const getAuthArtifactType = (artifactTypeKey: string): AuthArtifactTypes => {
     switch (artifactTypeKey) {
       case "AUTH_SG":
@@ -125,7 +130,6 @@ const Navbar = ({
     option?: IDropdownOption<any> | undefined,
     index?: number | undefined
   ) => {
-    setQueryString("");
     if (option) {
       if (option.key.toString().startsWith("AUTH")) {
         setSelectedArtifact({
@@ -201,7 +205,17 @@ const Navbar = ({
         variant="medium"
         style={{ fontWeight: "bold", paddingBottom: "4pt" }}
       >
-        Search Artifact Relationship
+        Search Artifact Relationship{" "}
+        <span id="axeQueryTeacher">
+          {" "}
+          <Link
+            onClick={() =>
+              setIsAxeQueryTeacherVisible(!isAxeQueryTeacherVisible)
+            }
+          >
+            ( use AXE Query for complex queries )
+          </Link>
+        </span>
       </Text>
       <div
         style={{
@@ -212,7 +226,7 @@ const Navbar = ({
       >
         <SearchBox
           style={{ minWidth: "30vw" }}
-          placeholder="Search for an artifact and get it's relationship with other artifacts"
+          placeholder="Search for an artifact and it's access Tree. "
           onSearch={(newValue) => setQueryString(newValue)}
           onClear={() => {
             setQueryString("");
@@ -245,6 +259,69 @@ const Navbar = ({
         onRenderLabel={onRenderLabel}
         onChange={onArtifactChange}
       />
+      {isAxeQueryTeacherVisible && (
+        <TeachingBubble
+          target={"#axeQueryTeacher"}
+          hasCondensedHeadline={true}
+          headline="Discover about AXE Query"
+        >
+          <Stack>
+            <li>
+              <Text style={{ color: "white" }}>
+                AXE Query follows the Syntax : <br />
+                <span
+                  style={{
+                    background: "grey",
+                    paddingInline: "5pt",
+                    borderRadius: "5pt",
+                    fontWeight: "bold",
+                  }}
+                >
+                  (Entity condition Match);(Entity condition Match)
+                </span>
+              </Text>
+            </li>
+            <li>
+              <Text style={{ color: "white" }}>
+                Nodes matching all conditions and their ownership model is
+                returned
+              </Text>
+            </li>
+            <li>
+              <Text style={{ color: "white" }}>
+                For Example,Search for all Nodes in PME Tenant <br />
+                <span
+                  style={{
+                    background: "grey",
+                    paddingInline: "5pt",
+                    borderRadius: "5pt",
+                    fontWeight: "bold",
+                  }}
+                >
+                  Tenant = PME
+                </span>
+              </Text>
+            </li>
+            <li>
+              <Text style={{ color: "white" }}>
+                For Example, Search for all Nodes in PME Tenant with Name
+                starting with Hello
+                <br />
+                <span
+                  style={{
+                    background: "grey",
+                    paddingInline: "5pt",
+                    borderRadius: "5pt",
+                    fontWeight: "bold",
+                  }}
+                >
+                  Tenant = PME; Name startswith Hello
+                </span>
+              </Text>
+            </li>
+          </Stack>
+        </TeachingBubble>
+      )}
     </Stack>
   );
 };
