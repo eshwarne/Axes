@@ -5,8 +5,8 @@ pool:
 jobs:
   job: "NPM Install and Build"
   steps:
-   - task: AzureStaticWebApp@0
-    inputs:
-      app_location: './build' # App source code path relative to cwd
-      cwd: '$(System.DefaultWorkingDirectory)'
-      azure_static_web_apps_api_token: $(deployment_token)
+    - task: AzureStaticWebApp@0
+      inputs:
+        app_location: "./build" # App source code path relative to cwd
+        cwd: "$(System.DefaultWorkingDirectory)"
+        azure_static_web_apps_api_token: $(deployment_token)
