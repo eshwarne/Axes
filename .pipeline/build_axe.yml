@@ -8,5 +8,5 @@ jobs:
    - task: AzureStaticWebApp@0
     inputs:
       app_location: './build' # App source code path relative to cwd
-      cwd: '$(System.DefaultWorkingDirectory)' # Working directory - optional
+      cwd: '$(System.DefaultWorkingDirectory)'
       azure_static_web_apps_api_token: $(deployment_token)
