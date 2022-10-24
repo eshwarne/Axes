@@ -3,7 +3,7 @@ trigger:
 pool:
   vmImage: "ubuntu-latest"
 jobs:
-  - job: "NPM Install and Build"
+  - job: "publish_azure_static_app"
     steps:
       - task: AzureStaticWebApp@0
         inputs:
